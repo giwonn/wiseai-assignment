@@ -1,1 +1,1 @@
-rootProject.name = "wiseai-assignemtn"
+rootProject.name = "wiseai-assignment"

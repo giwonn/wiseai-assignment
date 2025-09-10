@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: wiseai-assignment
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/reservation_db
+    username: application
+    password: application
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate.format_sql: true
