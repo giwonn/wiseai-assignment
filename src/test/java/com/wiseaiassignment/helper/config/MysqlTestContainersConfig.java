@@ -1,4 +1,4 @@
-package com.wiseaiassignment.config;
+package com.wiseaiassignment.helper.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.testcontainers.containers.MySQLContainer;

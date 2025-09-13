@@ -5,7 +5,10 @@ import com.wiseaiassignment.api.reservation.dto.CancelReservationRequest;
 import com.wiseaiassignment.api.reservation.dto.CreateReservationRequest;
 import com.wiseaiassignment.api.reservation.dto.ReservationResponse;
 import com.wiseaiassignment.api.ApiCustomResponse;
+import com.wiseaiassignment.application.reservation.ReservationAppService;
+import com.wiseaiassignment.application.reservation.dto.ReservationResult;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,8 +16,11 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/reservations")
 public class ReservationController implements ReservationApiSpec {
+
+	private final ReservationAppService reservationAppService;
 
 	@Override
 	@GetMapping(path = "")
@@ -38,7 +44,8 @@ public class ReservationController implements ReservationApiSpec {
 	public ApiCustomResponse<ReservationResponse> reserve(
 			@Valid @RequestBody CreateReservationRequest request
 	) {
-		throw new Error("구현 예정");
+		ReservationResult result = reservationAppService.reserve(request.toCreateCommand());
+		return ApiCustomResponse.of(ReservationResponse.from(result));
 	}
 
 	@Override

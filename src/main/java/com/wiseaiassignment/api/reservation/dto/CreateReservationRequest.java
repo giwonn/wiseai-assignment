@@ -1,5 +1,7 @@
 package com.wiseaiassignment.api.reservation.dto;
 
+import com.wiseaiassignment.application.reservation.dto.CreateReservationCommand;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
@@ -11,7 +13,18 @@ public record CreateReservationRequest(
 		@NotNull LocalDateTime startTime,
 		@NotNull LocalDateTime endTime,
 		@NotNull Long userId,
-		List<String> attendeeEmails
+		List<@Email String> attendeeEmails
 ) {
+
+	public CreateReservationCommand toCreateCommand() {
+		return new CreateReservationCommand(
+				title,
+				userId,
+				roomId,
+				startTime,
+				endTime,
+				attendeeEmails
+		);
+	}
 
 }

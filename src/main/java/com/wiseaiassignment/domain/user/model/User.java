@@ -1,4 +1,4 @@
-package com.wiseaiassignment.domain.meetingroom.model;
+package com.wiseaiassignment.domain.user.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -9,7 +9,7 @@ import java.time.Instant;
 
 @Entity
 @Getter
-public class MeetingRoom {
+public class User {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,7 +19,7 @@ public class MeetingRoom {
 	private String name;
 
 	@Column(nullable = false)
-	private int capacity;
+	private String email;
 
 	@Column(nullable = false)
 	private boolean active = true;
@@ -30,11 +30,11 @@ public class MeetingRoom {
 	@LastModifiedDate
 	private Instant updatedAt;
 
-	public static MeetingRoom create(String name, int capacity) {
-		MeetingRoom meetingRoom = new MeetingRoom();
-		meetingRoom.name = name;
-		meetingRoom.capacity = capacity;
-		return meetingRoom;
+	public static User create(String email, String name) {
+		User user = new User();
+		user.email = email;
+		user.name = name;
+		return user;
 	}
 
 	public void deactivate() {

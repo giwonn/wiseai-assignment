@@ -25,25 +25,25 @@ class MeetingRoomServiceTest {
 	private MeetingRoomService meetingRoomService;
 
 	@Test
-	void 존재하는_회의실_ID로_조회시_회의실을_반환한다() {
+	void ID로_회의실을_조회시_회의실을_반환한다() {
 		// given
 		MeetingRoom meetingRoom = MeetingRoom.create("회의실1", 10);
-		given(meetingRoomRepository.findById(1L)).willReturn(Optional.of(meetingRoom));
+		given(meetingRoomRepository.findByIdAndActive(1L, true)).willReturn(Optional.of(meetingRoom));
 
 		// when
-		MeetingRoom result = meetingRoomService.findExistingMeetingRoomById(1L);
+		MeetingRoom result = meetingRoomService.findActiveMeetingRoomById(1L);
 
 		// then
 		assertThat(result).isEqualTo(meetingRoom);
 	}
 
 	@Test
-	void 존재하지_않는_회의실_ID로_조회시_NOT_FOUND_MEETING_ROOM_예외가_발생한다() {
+	void ID로_존재하지_않는_회의실을_조회하면_NOT_FOUND_MEETING_ROOM_예외가_발생한다() {
 		// given
-		given(meetingRoomRepository.findById(1L)).willReturn(Optional.empty());
+		given(meetingRoomRepository.findByIdAndActive(1L, true)).willReturn(Optional.empty());
 
 		// when & then
-		assertThatThrownBy(() -> meetingRoomService.findExistingMeetingRoomById(1L))
+		assertThatThrownBy(() -> meetingRoomService.findActiveMeetingRoomById(1L))
 				.isInstanceOf(DomainException.class)
 				.extracting(ex -> ((DomainException) ex).getType())
 				.isEqualTo(ExceptionType.NOT_FOUND_MEETING_ROOM);

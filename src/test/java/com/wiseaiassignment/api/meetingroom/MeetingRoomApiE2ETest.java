@@ -4,7 +4,7 @@ import com.wiseaiassignment.api.ApiCustomResponse;
 import com.wiseaiassignment.api.meetingroom.dto.MeetingRoomResponse;
 import com.wiseaiassignment.domain.meetingroom.model.MeetingRoom;
 import com.wiseaiassignment.domain.meetingroom.repository.MeetingRoomRepository;
-import com.wiseaiassignment.util.DatabaseCleanUp;
+import com.wiseaiassignment.helper.util.DatabaseCleanUp;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -20,7 +20,7 @@ import org.springframework.http.ResponseEntity;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-class MeetingRoomControllerE2ETest {
+class MeetingRoomApiE2ETest {
 
 	private static final String ENDPOINT = "/meeting-rooms";
 

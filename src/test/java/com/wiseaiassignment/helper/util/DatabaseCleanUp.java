@@ -1,4 +1,4 @@
-package com.wiseaiassignment.util;
+package com.wiseaiassignment.helper.util;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
