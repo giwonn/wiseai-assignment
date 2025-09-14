@@ -1,12 +1,13 @@
 package com.wiseaiassignment.api.reservation;
 
-import com.wiseaiassignment.api.meetingroom.dto.MeetingRoomScheduleResponse;
 import com.wiseaiassignment.api.reservation.dto.CancelReservationRequest;
 import com.wiseaiassignment.api.reservation.dto.CreateReservationRequest;
 import com.wiseaiassignment.api.reservation.dto.ReservationResponse;
 import com.wiseaiassignment.api.ApiCustomResponse;
+import com.wiseaiassignment.api.reservation.dto.ReservationSummaryResponse;
 import com.wiseaiassignment.application.reservation.ReservationAppService;
 import com.wiseaiassignment.application.reservation.dto.ReservationResult;
+import com.wiseaiassignment.application.reservation.dto.ReservationSummaryResult;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -23,20 +24,22 @@ public class ReservationController implements ReservationApiSpec {
 	private final ReservationAppService reservationAppService;
 
 	@Override
-	@GetMapping(path = "")
-	public ApiCustomResponse<List<MeetingRoomScheduleResponse>> getReservationsByDate(
+	@GetMapping(path = "/summary")
+	public ApiCustomResponse<List<ReservationSummaryResponse>> getReservationsByDate(
 			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
 			LocalDate date
 	) {
-		throw new Error("구현 예정");
+		List<ReservationSummaryResult> results = reservationAppService.findByDate(date);
+		return ApiCustomResponse.of(results.stream().map(ReservationSummaryResponse::from).toList());
 	}
 
 	@Override
 	@GetMapping(path = "/{id}")
 	public ApiCustomResponse<ReservationResponse> getReservationById(
-			@PathVariable String id
+			@PathVariable long id
 	) {
-		throw new Error("구현 예정");
+		ReservationResult result = reservationAppService.findById(id);
+		return ApiCustomResponse.of(ReservationResponse.from(result));
 	}
 
 	@Override

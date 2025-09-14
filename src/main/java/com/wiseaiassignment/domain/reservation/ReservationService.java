@@ -4,6 +4,7 @@ import com.wiseaiassignment.domain.common.exception.DomainException;
 import com.wiseaiassignment.domain.common.exception.ExceptionType;
 import com.wiseaiassignment.domain.reservation.model.Reservation;
 import com.wiseaiassignment.domain.reservation.model.ReservationSlot;
+import com.wiseaiassignment.domain.reservation.model.ReservationStatus;
 import com.wiseaiassignment.domain.reservation.repository.ReservationRepository;
 import com.wiseaiassignment.domain.reservation.repository.ReservationSlotRepository;
 import jakarta.transaction.Transactional;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Slf4j
@@ -20,6 +22,19 @@ public class ReservationService {
 
 	private final ReservationRepository reservationRepository;
 	private final ReservationSlotRepository reservationSlotRepository;
+
+	public List<Reservation> findByDate(LocalDate date) {
+		return reservationRepository.findByStatusAndDate(
+				ReservationStatus.RESERVED,
+				date.atStartOfDay(),
+				date.plusDays(1).atStartOfDay()
+		);
+	}
+
+	public Reservation findById(long id) {
+		return reservationRepository.findById(id)
+				.orElseThrow(() -> new DomainException(ExceptionType.NOT_FOUND_RESERVATION));
+	}
 
 	@Transactional
 	public Reservation reserve(Reservation reservation) {

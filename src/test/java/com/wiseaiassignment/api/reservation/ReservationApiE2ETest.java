@@ -3,8 +3,11 @@ package com.wiseaiassignment.api.reservation;
 import com.wiseaiassignment.api.ApiCustomResponse;
 import com.wiseaiassignment.api.reservation.dto.CreateReservationRequest;
 import com.wiseaiassignment.api.reservation.dto.ReservationResponse;
+import com.wiseaiassignment.api.reservation.dto.ReservationSummaryResponse;
 import com.wiseaiassignment.domain.meetingroom.model.MeetingRoom;
 import com.wiseaiassignment.domain.meetingroom.repository.MeetingRoomRepository;
+import com.wiseaiassignment.domain.reservation.model.Reservation;
+import com.wiseaiassignment.domain.reservation.repository.ReservationRepository;
 import com.wiseaiassignment.domain.user.model.User;
 import com.wiseaiassignment.domain.user.repository.UserRepository;
 import com.wiseaiassignment.helper.util.DatabaseCleanUp;
@@ -18,6 +21,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,20 +41,104 @@ class ReservationApiE2ETest {
 	UserRepository userRepository;
 
 	@Autowired
+	ReservationRepository reservationRepository;
+
+	@Autowired
 	DatabaseCleanUp databaseCleanUp;
 
 	User savedUser;
 	MeetingRoom savedMeetingRoom;
+	List<Reservation> savedReservations;
 
 	@BeforeEach
 	void setUp() {
 		savedUser = userRepository.save(User.create("test@example.com", "테스트사용자"));
 		savedMeetingRoom = meetingRoomRepository.save(MeetingRoom.create("회의실1", 10));
+		savedReservations = reservationRepository.saveAll(
+				List.of(
+					Reservation.create(
+							"회의1",
+							savedUser.getId(),
+							savedMeetingRoom.getId(),
+							LocalDateTime.of(2025,1,1,8,0),
+							LocalDateTime.of(2025,1,1,9,0),
+							List.of("test1@email.com", "test2@email.com")
+					),
+					Reservation.create(
+							"회의2",
+							savedUser.getId(),
+							savedMeetingRoom.getId(),
+							LocalDateTime.of(2025,1,1,9,0),
+							LocalDateTime.of(2025,1,1,10,0),
+							List.of("test3@email.com", "test4@email.com")
+					)
+				)
+		);
 	}
 
 	@AfterEach
 	void tearDown() {
 		databaseCleanUp.truncateAllTables();
+	}
+
+	@DisplayName("GET /reservations/summary")
+	@Nested
+	class getReservationsByDate {
+
+		@Test void 회의실_예약_리스트를_조회한다() {
+			// given
+			String url = ENDPOINT + "/summary?date=2025-01-01";
+
+			// when
+			ParameterizedTypeReference<ApiCustomResponse<List<ReservationSummaryResponse>>> responseType =
+					new ParameterizedTypeReference<>() {};
+			ResponseEntity<ApiCustomResponse<List<ReservationSummaryResponse>>> response =
+					testRestTemplate.exchange(url, HttpMethod.GET, null, responseType);
+
+			// then
+			assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+			assertThat(response.getBody()).isNotNull();
+
+			List<ReservationSummaryResponse> reservations = response.getBody().data().stream()
+					.sorted(Comparator.comparingLong(ReservationSummaryResponse::reservationId))
+					.toList();
+			assertThat(reservations).hasSize(2);
+			assertThat(reservations.get(0).reservationId()).isEqualTo(savedReservations.get(0).getId());
+			assertThat(reservations.get(0).reservationTitle()).isEqualTo(savedReservations.get(0).getTitle());
+			assertThat(reservations.get(0).roomId()).isEqualTo(savedMeetingRoom.getId());
+			assertThat(reservations.get(0).startTime()).isEqualTo(savedReservations.get(0).getStartTime());
+			assertThat(reservations.get(0).endTime()).isEqualTo(savedReservations.get(0).getEndTime());
+			assertThat(reservations.get(0).status()).isEqualTo(savedReservations.get(0).getStatus());
+
+		}
+	}
+
+	@DisplayName("GET /reservations/{id}")
+	@Nested
+	class getReservation {
+		@Test
+		void 회의실_예약_단건을_조회한다() {
+			// given
+			String url = ENDPOINT + "/" + savedReservations.get(0).getId();
+
+			// when
+			ParameterizedTypeReference<ApiCustomResponse<ReservationResponse>> responseType =
+					new ParameterizedTypeReference<>() {};
+			ResponseEntity<ApiCustomResponse<ReservationResponse>> response =
+					testRestTemplate.exchange(url, HttpMethod.GET, null, responseType);
+
+			// then
+			assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+			assertThat(response.getBody()).isNotNull();
+			ReservationResponse reservation = response.getBody().data();
+			assertThat(reservation.reservationId()).isEqualTo(savedReservations.get(0).getId());
+			assertThat(reservation.roomId()).isEqualTo(savedMeetingRoom.getId());
+			assertThat(reservation.roomName()).isEqualTo(savedMeetingRoom.getName());
+			assertThat(reservation.reserverName()).isEqualTo(savedUser.getName());
+			assertThat(reservation.reserverEmail()).isEqualTo(savedUser.getEmail());
+			assertThat(reservation.startTime()).isEqualTo(savedReservations.get(0).getStartTime());
+			assertThat(reservation.endTime()).isEqualTo(savedReservations.get(0).getEndTime());
+		}
 	}
 
 	@DisplayName("POST /reservations - 회의실 예약")
@@ -81,7 +169,6 @@ class ReservationApiE2ETest {
 			assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
 			assertThat(response.getBody()).isNotNull();
 			ReservationResponse reservation = response.getBody().data();
-			assertThat(reservation.reservationId()).isEqualTo(1L);
 			assertThat(reservation.roomId()).isEqualTo(savedMeetingRoom.getId());
 			assertThat(reservation.roomName()).isEqualTo(savedMeetingRoom.getName());
 			assertThat(reservation.reserverName()).isEqualTo(savedUser.getName());

@@ -13,7 +13,16 @@ import java.util.List;
 @Repository
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
 
-	@Query("SELECT r FROM Reservation r	WHERE r.meetingRoomId = :roomId AND r.timeRange.startTime < :endTime AND r.timeRange.endTime > :startTime")
+	@Query("SELECT r FROM Reservation r WHERE r.status = :status " +
+			"AND r.timeRange.startTime < :endOfDay " +
+			"AND r.timeRange.endTime > :startOfDay")
+	List<Reservation> findByStatusAndDate(
+			@Param("status") ReservationStatus status,
+			@Param("startOfDay") LocalDateTime startOfDay,
+			@Param("endOfDay") LocalDateTime endOfDay
+	);
+
+
 	@Query("SELECT r FROM Reservation r WHERE r.meetingRoomId = :roomId " +
 			"AND r.timeRange.startTime < :endTime " +
 			"AND r.timeRange.endTime > :startTime")
