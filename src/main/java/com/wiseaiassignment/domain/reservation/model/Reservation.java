@@ -1,5 +1,7 @@
 package com.wiseaiassignment.domain.reservation.model;
 
+import com.wiseaiassignment.domain.common.exception.DomainException;
+import com.wiseaiassignment.domain.common.exception.ExceptionType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -28,8 +30,14 @@ public class Reservation {
 	private long meetingRoomId;
 
 	@Column(nullable = false)
+	private String meetingRoomName;
+
+	@Column(nullable = false)
 	@JoinColumn(foreignKey = @ForeignKey(name = "fk_reservation_user"))
 	private long userId;
+
+	@Column(nullable = false)
+	private String userEmail;
 
 	@Getter(AccessLevel.NONE)
 	@Embedded
@@ -48,11 +56,22 @@ public class Reservation {
 	@LastModifiedDate
 	private Instant updatedAt;
 
-	Reservation(Long id, String title, long meetingRoomId, long userId, TimeRange timeRange, List<String> attendeeEmails) {
+	Reservation(
+			Long id,
+			String title,
+			long meetingRoomId,
+			String meetingRoomName,
+			long userId,
+			String userEmail,
+			TimeRange timeRange,
+			List<String> attendeeEmails
+	) {
 		this.id = id;
 		this.title = title;
 		this.meetingRoomId = meetingRoomId;
+		this.meetingRoomName = meetingRoomName;
 		this.userId = userId;
+		this.userEmail = userEmail;
 		this.timeRange = timeRange;
 		this.attendeeEmails = attendeeEmails;
 	}
@@ -60,7 +79,9 @@ public class Reservation {
 	public static Reservation create(
 			String title,
 			long userId,
+			String userEmail,
 			long meetingRoomId,
+			String meetingRoomName,
 			LocalDateTime startTime,
 			LocalDateTime endTime,
 			List<String> attendeeEmails
@@ -69,7 +90,9 @@ public class Reservation {
 				null,
 				title,
 				meetingRoomId,
+				meetingRoomName,
 				userId,
+				userEmail,
 				TimeRange.of(startTime, endTime),
 				attendeeEmails
 		);
@@ -83,8 +106,14 @@ public class Reservation {
 		return timeRange.getEndTime();
 	}
 
-	public void cancel() {
-		this.status = ReservationStatus.CANCELED;
+	public void cancel(long userId) {
+		if (this.userId != userId) {
+			throw new DomainException(ExceptionType.NOT_RESERVATION_HOST);
+		}
+		if (status == ReservationStatus.CANCELED) {
+			throw new DomainException(ExceptionType.ALREADY_CANCELED_RESERVATION);
+		}
+		status = ReservationStatus.CANCELED;
 	}
 
 }

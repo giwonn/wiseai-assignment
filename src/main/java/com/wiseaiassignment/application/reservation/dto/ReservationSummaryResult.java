@@ -1,7 +1,7 @@
 package com.wiseaiassignment.application.reservation.dto;
 
-import com.wiseaiassignment.domain.reservation.model.Reservation;
 import com.wiseaiassignment.domain.reservation.model.ReservationStatus;
+import com.wiseaiassignment.domain.reservation.model.ReservationSummary;
 
 import java.time.LocalDateTime;
 
@@ -13,7 +13,7 @@ public record ReservationSummaryResult(
 		LocalDateTime endTime,
 		ReservationStatus status
 ) {
-	public static ReservationSummaryResult from(Reservation reservation) {
+	public static ReservationSummaryResult from(ReservationSummary reservation) {
 		return new ReservationSummaryResult(
 				reservation.getId(),
 				reservation.getTitle(),

@@ -83,7 +83,9 @@ class ReservationServiceConcurrencyTest {
 						Reservation reservation = Reservation.create(
 								"주간회의",
 								userIds[index],
+								"test@email.com",
 								savedMeetingRoom.getId(),
+								savedMeetingRoom.getName(),
 								LocalDateTime.of(2024, 1, 1, 10, 0),
 								LocalDateTime.of(2024, 1, 1, 10, 30),
 								List.of()

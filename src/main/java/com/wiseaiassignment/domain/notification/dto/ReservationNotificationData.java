@@ -1,4 +1,4 @@
-package com.wiseaiassignment.application.reservation.dto;
+package com.wiseaiassignment.domain.notification.dto;
 
 import com.wiseaiassignment.domain.reservation.model.Reservation;
 import com.wiseaiassignment.domain.reservation.model.ReservationStatus;
@@ -6,28 +6,29 @@ import com.wiseaiassignment.domain.reservation.model.ReservationStatus;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public record ReservationResult(
+/**
+ * 회의 알림에 필요한 데이터를 담는 DTO
+ */
+public record ReservationNotificationData(
 		long reservationId,
-		String reservationTitle,
-		ReservationStatus status,
-		long roomId,
-		String roomName,
-		String reserverEmail,
+		String meetingTitle,
+		String meetingRoomName,
+		String organizerEmail,
 		LocalDateTime startTime,
 		LocalDateTime endTime,
-		List<String> attendeeEmails
+		List<String> attendeeEmails,
+		ReservationStatus status
 ) {
-	public static ReservationResult from(Reservation reservation) {
-		return new ReservationResult(
+	public static ReservationNotificationData from(Reservation reservation) {
+		return new ReservationNotificationData(
 				reservation.getId(),
 				reservation.getTitle(),
-				reservation.getStatus(),
-				reservation.getMeetingRoomId(),
 				reservation.getMeetingRoomName(),
 				reservation.getUserEmail(),
 				reservation.getStartTime(),
 				reservation.getEndTime(),
-				reservation.getAttendeeEmails()
+				reservation.getAttendeeEmails(),
+				reservation.getStatus()
 		);
 	}
 }

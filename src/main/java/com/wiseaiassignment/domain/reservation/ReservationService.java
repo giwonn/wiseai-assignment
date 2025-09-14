@@ -5,6 +5,7 @@ import com.wiseaiassignment.domain.common.exception.ExceptionType;
 import com.wiseaiassignment.domain.reservation.model.Reservation;
 import com.wiseaiassignment.domain.reservation.model.ReservationSlot;
 import com.wiseaiassignment.domain.reservation.model.ReservationStatus;
+import com.wiseaiassignment.domain.reservation.model.ReservationSummary;
 import com.wiseaiassignment.domain.reservation.repository.ReservationRepository;
 import com.wiseaiassignment.domain.reservation.repository.ReservationSlotRepository;
 import jakarta.transaction.Transactional;
@@ -23,12 +24,16 @@ public class ReservationService {
 	private final ReservationRepository reservationRepository;
 	private final ReservationSlotRepository reservationSlotRepository;
 
-	public List<Reservation> findByDate(LocalDate date) {
-		return reservationRepository.findByStatusAndDate(
+	public List<ReservationSummary> findByDate(LocalDate date) {
+		List<Reservation> reservations = reservationRepository.findByStatusAndDate(
 				ReservationStatus.RESERVED,
 				date.atStartOfDay(),
 				date.plusDays(1).atStartOfDay()
 		);
+
+		return reservations.stream()
+				.map(ReservationSummary::from)
+				.toList();
 	}
 
 	public Reservation findById(long id) {
@@ -57,4 +62,14 @@ public class ReservationService {
 		}
 	}
 
+	@Transactional
+	public Reservation cancel(long id, long userId) {
+		Reservation reservation = reservationRepository.findById(id)
+				.orElseThrow(() -> new DomainException(ExceptionType.NOT_FOUND_RESERVATION));
+
+		reservationSlotRepository.deleteByReservationId(reservation.getId());
+		reservation.cancel(userId);
+
+		return reservation;
+	}
 }

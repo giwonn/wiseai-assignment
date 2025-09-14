@@ -28,7 +28,9 @@ class ReservationRepositoryTest {
 			Reservation reservation = Reservation.create(
 					"주간회의",
 					1L,
+					"test@email.com",
 					1L,
+					"회의실1",
 					LocalDateTime.of(2024, 1, 1, 14, 0), // 14:00 ~ 15:00
 					LocalDateTime.of(2024, 1, 1, 15, 0),
 					List.of()
@@ -52,7 +54,9 @@ class ReservationRepositoryTest {
 			Reservation reservation = Reservation.create(
 					"주간회의",
 					1L,
+					"test@email.com",
 					1L,
+					"회의실1",
 					LocalDateTime.of(2024, 1, 1, 14, 0), // 14:00 ~ 15:00
 					LocalDateTime.of(2024, 1, 1, 15, 0),
 					List.of()
@@ -76,7 +80,9 @@ class ReservationRepositoryTest {
 			Reservation reservation = Reservation.create(
 					"주간회의",
 					1L,
+					"test@email.com",
 					1L,
+					"회의실1",
 					LocalDateTime.of(2024, 1, 1, 14, 0), // 14:00 ~ 15:00
 					LocalDateTime.of(2024, 1, 1, 15, 0),
 					List.of()
@@ -100,7 +106,10 @@ class ReservationRepositoryTest {
 			Reservation reservation = Reservation.create(
 					"주간회의",
 					1L,
+
+					"test@email.com",
 					1L,
+					"회의실1",
 					LocalDateTime.of(2024, 1, 1, 14, 0), // 14:00 ~ 15:00
 					LocalDateTime.of(2024, 1, 1, 15, 0),
 					List.of()

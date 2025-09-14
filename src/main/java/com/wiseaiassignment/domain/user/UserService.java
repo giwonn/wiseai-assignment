@@ -18,9 +18,4 @@ public class UserService {
 				.orElseThrow(() -> new DomainException(ExceptionType.NOT_FOUND_USER));
 	}
 
-	public User findById(Long userId) {
-		return userRepository.findById(userId)
-				.orElseThrow(() -> new DomainException(ExceptionType.NOT_FOUND_USER));
-	}
-
 }

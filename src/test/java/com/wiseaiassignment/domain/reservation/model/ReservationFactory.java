@@ -9,7 +9,9 @@ public class ReservationFactory {
 			Long id,
 			String title,
 			long meetingRoomId,
+			String meetingRoomName,
 			long userId,
+			String userEmail,
 			LocalDateTime startTime,
 			LocalDateTime endTime,
 			List<String> emails
@@ -18,7 +20,9 @@ public class ReservationFactory {
 				id,
 				title,
 				meetingRoomId,
+				meetingRoomName,
 				userId,
+				userEmail,
 				TimeRange.of(startTime, endTime),
 				emails
 		);

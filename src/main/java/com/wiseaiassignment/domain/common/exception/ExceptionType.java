@@ -17,6 +17,8 @@ public enum ExceptionType {
 	INVALID_RESERVATION_REQUEST(HttpStatus.BAD_REQUEST, "잘못된 예약 요청입니다.", LogLevel.WARN),
 	MEETING_ROOM_ALREADY_RESERVED(HttpStatus.CONFLICT, "이미 예약된 시간입니다.", LogLevel.WARN),
 	RESERVATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "회의실 예약에 실패하였습니다.", LogLevel.ERROR),
+	NOT_RESERVATION_HOST(HttpStatus.BAD_REQUEST, "예약 주최자가 아닙니다.", LogLevel.WARN),
+	ALREADY_CANCELED_RESERVATION(HttpStatus.BAD_REQUEST, "이미 취소된 예약입니다.", LogLevel.WARN),
 
 	// User
 	NOT_FOUND_USER(HttpStatus.NOT_FOUND, "존재하지 않는 유저입니다.", LogLevel.WARN);

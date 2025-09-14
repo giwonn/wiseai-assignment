@@ -1,6 +1,7 @@
 package com.wiseaiassignment.api.reservation;
 
 import com.wiseaiassignment.api.ApiCustomResponse;
+import com.wiseaiassignment.api.ApiResponseType;
 import com.wiseaiassignment.api.reservation.dto.CreateReservationRequest;
 import com.wiseaiassignment.api.reservation.dto.ReservationResponse;
 import com.wiseaiassignment.api.reservation.dto.ReservationSummaryResponse;
@@ -59,7 +60,9 @@ class ReservationApiE2ETest {
 					Reservation.create(
 							"회의1",
 							savedUser.getId(),
+							savedUser.getEmail(),
 							savedMeetingRoom.getId(),
+							savedMeetingRoom.getName(),
 							LocalDateTime.of(2025,1,1,8,0),
 							LocalDateTime.of(2025,1,1,9,0),
 							List.of("test1@email.com", "test2@email.com")
@@ -67,7 +70,9 @@ class ReservationApiE2ETest {
 					Reservation.create(
 							"회의2",
 							savedUser.getId(),
+							savedUser.getEmail(),
 							savedMeetingRoom.getId(),
+							savedMeetingRoom.getName(),
 							LocalDateTime.of(2025,1,1,9,0),
 							LocalDateTime.of(2025,1,1,10,0),
 							List.of("test3@email.com", "test4@email.com")
@@ -81,11 +86,12 @@ class ReservationApiE2ETest {
 		databaseCleanUp.truncateAllTables();
 	}
 
-	@DisplayName("GET /reservations/summary")
+	@DisplayName("GET /reservations/summary - 일단위 회의실 예약 리스트 조회")
 	@Nested
 	class getReservationsByDate {
 
-		@Test void 회의실_예약_리스트를_조회한다() {
+		@Test
+		void 회의실_예약_리스트를_조회한다() {
 			// given
 			String url = ENDPOINT + "/summary?date=2025-01-01";
 
@@ -98,6 +104,7 @@ class ReservationApiE2ETest {
 			// then
 			assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
 			assertThat(response.getBody()).isNotNull();
+			assertThat(response.getBody().result()).isEqualTo(ApiResponseType.SUCCESS);
 
 			List<ReservationSummaryResponse> reservations = response.getBody().data().stream()
 					.sorted(Comparator.comparingLong(ReservationSummaryResponse::reservationId))
@@ -109,11 +116,10 @@ class ReservationApiE2ETest {
 			assertThat(reservations.get(0).startTime()).isEqualTo(savedReservations.get(0).getStartTime());
 			assertThat(reservations.get(0).endTime()).isEqualTo(savedReservations.get(0).getEndTime());
 			assertThat(reservations.get(0).status()).isEqualTo(savedReservations.get(0).getStatus());
-
 		}
 	}
 
-	@DisplayName("GET /reservations/{id}")
+	@DisplayName("GET /reservations/{id} - 회의실 예약 단건 조회")
 	@Nested
 	class getReservation {
 		@Test
@@ -130,11 +136,12 @@ class ReservationApiE2ETest {
 			// then
 			assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
 			assertThat(response.getBody()).isNotNull();
+			assertThat(response.getBody().result()).isEqualTo(ApiResponseType.SUCCESS);
+
 			ReservationResponse reservation = response.getBody().data();
 			assertThat(reservation.reservationId()).isEqualTo(savedReservations.get(0).getId());
 			assertThat(reservation.roomId()).isEqualTo(savedMeetingRoom.getId());
 			assertThat(reservation.roomName()).isEqualTo(savedMeetingRoom.getName());
-			assertThat(reservation.reserverName()).isEqualTo(savedUser.getName());
 			assertThat(reservation.reserverEmail()).isEqualTo(savedUser.getEmail());
 			assertThat(reservation.startTime()).isEqualTo(savedReservations.get(0).getStartTime());
 			assertThat(reservation.endTime()).isEqualTo(savedReservations.get(0).getEndTime());
@@ -165,13 +172,13 @@ class ReservationApiE2ETest {
 					testRestTemplate.exchange(ENDPOINT, HttpMethod.POST, request, responseType);
 
 			// then
-			System.out.println(response.getStatusCode());
 			assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
 			assertThat(response.getBody()).isNotNull();
+			assertThat(response.getBody().result()).isEqualTo(ApiResponseType.SUCCESS);
+
 			ReservationResponse reservation = response.getBody().data();
 			assertThat(reservation.roomId()).isEqualTo(savedMeetingRoom.getId());
 			assertThat(reservation.roomName()).isEqualTo(savedMeetingRoom.getName());
-			assertThat(reservation.reserverName()).isEqualTo(savedUser.getName());
 			assertThat(reservation.reserverEmail()).isEqualTo(savedUser.getEmail());
 			assertThat(reservation.startTime()).isEqualTo(requestBody.startTime());
 			assertThat(reservation.endTime()).isEqualTo(requestBody.endTime());
@@ -179,6 +186,39 @@ class ReservationApiE2ETest {
 
 		void 겹치는_시간에_예약을_시도하면_409에러코드를_반환한다() {
 			throw new Error("구현 예정");
+		}
+
+	}
+
+	@DisplayName("POST /reservations/{id}/cancel - 회의실 예약 취소")
+	@Nested
+	class CancelReservation {
+
+		@Test
+		void 회의실_예약_취소_성공() {
+			// given
+			CreateReservationRequest requestBody = new CreateReservationRequest(
+					savedMeetingRoom.getId(),
+					"주간회의",
+					LocalDateTime.of(2025,1,1,10,0),
+					LocalDateTime.of(2025,1,1,11,0),
+					savedUser.getId(),
+					List.of()
+			);
+			HttpEntity request = new HttpEntity<>(requestBody);
+			String endpoint = ENDPOINT + "/" + savedReservations.get(0).getId() + "/cancel";
+
+			// when
+			ParameterizedTypeReference<ApiCustomResponse<Void>> responseType =
+					new ParameterizedTypeReference<>() {};
+			ResponseEntity<ApiCustomResponse<Void>> response =
+					testRestTemplate.exchange(endpoint, HttpMethod.POST, request, responseType);
+
+			// then
+			assertThat(response.getStatusCode().is2xxSuccessful()).isTrue();
+			assertThat(response.getBody()).isNotNull();
+			assertThat(response.getBody().result()).isEqualTo(ApiResponseType.SUCCESS);
+			assertThat(response.getBody().data()).isNull();
 		}
 
 	}

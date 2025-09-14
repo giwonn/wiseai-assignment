@@ -37,7 +37,7 @@ public interface ReservationApiSpec {
 
 	@Operation(summary = "회의실 예약 취소", description = "회의실을 예약을 취소합니다.")
 	@ApiResponse(responseCode = "200", description = "회의실 예약 취소 성공")
-	ApiCustomResponse<ReservationResponse> cancel(
+	ApiCustomResponse<Void> cancel(
 			long id,
 			CancelReservationRequest request
 	);

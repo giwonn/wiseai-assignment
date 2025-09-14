@@ -16,7 +16,9 @@ class ReservationSlotTest {
 				1L,
 				"주간회의",
 				1L,
+				"회의실1",
 				1L,
+				"test1@email.com",
 				TimeRange.of(
 						LocalDateTime.of(2025, 1, 1, 10, 0), // 10:00 ~ 11:00
 						LocalDateTime.of(2025, 1, 1, 11, 0)

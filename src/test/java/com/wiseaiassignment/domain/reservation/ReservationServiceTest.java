@@ -4,6 +4,7 @@ import com.wiseaiassignment.domain.common.exception.DomainException;
 import com.wiseaiassignment.domain.common.exception.ExceptionType;
 import com.wiseaiassignment.domain.reservation.model.Reservation;
 import com.wiseaiassignment.domain.reservation.model.ReservationFactory;
+import com.wiseaiassignment.domain.reservation.model.ReservationStatus;
 import com.wiseaiassignment.domain.reservation.repository.ReservationRepository;
 import com.wiseaiassignment.domain.reservation.repository.ReservationSlotRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,12 +18,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willThrow;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
@@ -45,7 +47,9 @@ class ReservationServiceTest {
 				1L,
 				"주간회의",
 				1L,
+				"회의실1",
 				1L,
+				"test1@email.com",
 				LocalDateTime.of(2024, 1, 1, 10, 0),
 				LocalDateTime.of(2024, 1, 1, 11, 0),
 				List.of("test1@email.com", "test2@email.com")
@@ -98,5 +102,42 @@ class ReservationServiceTest {
 					.extracting(ex -> ((DomainException) ex).getType())
 					.isEqualTo(ExceptionType.RESERVATION_FAILED);
 		}
+	}
+
+	@Nested
+	@DisplayName("회의실 예약 취소")
+	class CancelReservationTest {
+
+		@Test
+		void 성공() {
+			// given
+			long reservationId = 1L;
+			long userId = 1L;
+			Reservation spyReservation = spy(reservation);
+			given(reservationRepository.findById(anyLong())).willReturn(Optional.of(spyReservation));
+			given(reservationSlotRepository.deleteByReservationId(anyLong())).willReturn(1L);
+
+			// when
+			Reservation result = reservationService.cancel(reservationId, userId);
+
+			// then
+			assertThat(result).isNotNull();
+			assertThat(result.getStatus()).isEqualTo(ReservationStatus.CANCELED);
+			verify(reservationRepository).findById(reservationId);
+			verify(reservationSlotRepository).deleteByReservationId(reservationId);
+		}
+
+		@Test
+		void 예약이_존재하지_않으면_NOT_FOUND_RESERVATION_예외_발생() {
+			// given
+			given(reservationRepository.findById(any())).willReturn(Optional.empty());
+
+			// when & then
+			assertThatThrownBy(() -> reservationService.cancel(1L, 1L))
+					.isInstanceOf(DomainException.class)
+					.extracting(ex -> ((DomainException) ex).getType())
+					.isEqualTo(ExceptionType.NOT_FOUND_RESERVATION);
+		}
+
 	}
 }

@@ -12,4 +12,8 @@ public record ApiCustomResponse<T>(
 		return new ApiCustomResponse<>(ApiResponseType.SUCCESS, data);
 	}
 
+	public static ApiCustomResponse<Void> empty() {
+		return new ApiCustomResponse<>(ApiResponseType.SUCCESS, null);
+	}
+
 }

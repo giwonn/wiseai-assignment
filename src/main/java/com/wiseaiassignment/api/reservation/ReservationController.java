@@ -52,11 +52,12 @@ public class ReservationController implements ReservationApiSpec {
 	}
 
 	@Override
-	@DeleteMapping(path = "/{id}")
-	public ApiCustomResponse<ReservationResponse> cancel(
+	@PostMapping(path = "/{id}/cancel")
+	public ApiCustomResponse<Void> cancel(
 			@PathVariable long id,
 			@Valid @RequestBody CancelReservationRequest request
 	) {
-		throw new Error("구현 예정");
+		reservationAppService.cancel(request.toCancelCommand(id));
+		return ApiCustomResponse.empty();
 	}
 }
