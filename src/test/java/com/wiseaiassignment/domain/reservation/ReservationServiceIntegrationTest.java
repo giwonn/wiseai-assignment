@@ -12,10 +12,7 @@ import com.wiseaiassignment.domain.reservation.repository.ReservationSlotReposit
 import com.wiseaiassignment.domain.user.model.User;
 import com.wiseaiassignment.domain.user.repository.UserRepository;
 import com.wiseaiassignment.helper.util.DatabaseCleanUp;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -70,7 +67,8 @@ class ReservationServiceIntegrationTest {
 	}
 
 	@Nested
-	class 회의실_예약 {
+	@DisplayName("회의실 예약 테스트")
+	class ReservationMeetingRoom {
 
 		@Test
 		void 정상적으로_예약이_생성된다() {

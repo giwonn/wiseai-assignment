@@ -7,6 +7,7 @@ import com.wiseaiassignment.domain.reservation.model.ReservationFactory;
 import com.wiseaiassignment.domain.reservation.repository.ReservationRepository;
 import com.wiseaiassignment.domain.reservation.repository.ReservationSlotRepository;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -52,7 +53,8 @@ class ReservationServiceTest {
 	}
 
 	@Nested
-	class 예약_시도 {
+	@DisplayName("회의실 예약 시도")
+	class ReservationTest {
 
 		@Test
 		void 성공() {

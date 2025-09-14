@@ -2,6 +2,7 @@ package com.wiseaiassignment.domain.reservation.model;
 
 import com.wiseaiassignment.domain.common.exception.DomainException;
 import com.wiseaiassignment.domain.common.exception.ExceptionType;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -12,7 +13,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class TimeRangeTest {
 
 	@Nested
-	class 예약_시작시간은_종료시간보다_과거여야_한다 {
+	@DisplayName("예약 시작시간은 종료시간보다 과거여야 한다")
+	class StartTimeMustBeBeforeEndTime {
 
 		@Test
 		void 시작시간이_종료시간보다_과거면_TimeRange_객체가_성공적으로_생성된다() {
@@ -52,7 +54,8 @@ class TimeRangeTest {
 	}
 
 	@Nested
-	class 예약시간은_0분_혹은_30분이어야_한다 {
+	@DisplayName("예약시간은 0분 혹은 30분이어야 한다")
+	class ReservationTimeMustBeHalfHour {
 
 		@Test
 		void 시작시간과_종료시간이_0분이면_TimeRange_객체가_성공적으로_생성된다() {

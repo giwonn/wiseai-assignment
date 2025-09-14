@@ -2,6 +2,7 @@ package com.wiseaiassignment.domain.reservation.repository;
 
 import com.wiseaiassignment.domain.reservation.model.Reservation;
 import com.wiseaiassignment.helper.annotation.RepositoryTest;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +19,8 @@ class ReservationRepositoryTest {
 	ReservationRepository reservationRepository;
 
 	@Nested
-	class findConflictReservations_같은_회의실의_겹치는_예약시간_조회 {
+	@DisplayName("같은 회의실의 겹치는 예약시간 조회")
+	class findConflictReservations {
 
 		@Test
 		void 예약시작시간에_종료되는_회의는_조회되지_않는다() {

@@ -10,10 +10,7 @@ import com.wiseaiassignment.domain.reservation.repository.ReservationSlotReposit
 import com.wiseaiassignment.domain.user.model.User;
 import com.wiseaiassignment.domain.user.repository.UserRepository;
 import com.wiseaiassignment.helper.util.DatabaseCleanUp;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -60,7 +57,8 @@ class ReservationServiceConcurrencyTest {
 	}
 
 	@Nested
-	class 회의실_예약 {
+	@DisplayName("회의실 예약 동시성 테스트")
+	class ReserveConcurrencyTest {
 
 		@Test
 		void 같은_회의실로_동일_시간에_예약하면_하나만_성공한다() throws InterruptedException {
