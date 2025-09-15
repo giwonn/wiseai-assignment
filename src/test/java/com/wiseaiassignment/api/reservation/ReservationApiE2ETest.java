@@ -1,10 +1,12 @@
 package com.wiseaiassignment.api.reservation;
 
 import com.wiseaiassignment.api.ApiCustomResponse;
+import com.wiseaiassignment.api.ApiErrorResponse;
 import com.wiseaiassignment.api.ApiResponseType;
 import com.wiseaiassignment.api.reservation.dto.CreateReservationRequest;
 import com.wiseaiassignment.api.reservation.dto.ReservationResponse;
 import com.wiseaiassignment.api.reservation.dto.ReservationSummaryResponse;
+import com.wiseaiassignment.domain.common.exception.ExceptionType;
 import com.wiseaiassignment.domain.meetingroom.model.MeetingRoom;
 import com.wiseaiassignment.domain.meetingroom.repository.MeetingRoomRepository;
 import com.wiseaiassignment.domain.reservation.ReservationService;
@@ -195,8 +197,30 @@ class ReservationApiE2ETest {
 			assertThat(responseBody.organizerId()).isEqualTo(reservation.organizerId());
 		}
 
-		void 겹치는_시간에_예약을_시도하면_409에러코드를_반환한다() {
-			throw new Error("구현 예정");
+		@Test
+		void 겹치는_시간에_예약을_시도하면_MEETING_ROOM_ALREADY_RESERVED_에러코드를_반환한다() {
+			// given
+			CreateReservationRequest requestBody = new CreateReservationRequest(
+					savedMeetingRoom.getId(),
+					"주간회의",
+					LocalDateTime.of(2025,1,1,9,30),
+					LocalDateTime.of(2025,1,1,10,30),
+					savedUser.getId(),
+					List.of()
+			);
+			HttpEntity request = new HttpEntity<>(requestBody);
+
+			// when
+			ParameterizedTypeReference<ApiErrorResponse> responseType =
+					new ParameterizedTypeReference<>() {};
+			ResponseEntity<ApiErrorResponse> response =
+					testRestTemplate.exchange(ENDPOINT, HttpMethod.POST, request, responseType);
+
+			// then
+			assertThat(response.getStatusCode().is4xxClientError()).isTrue();
+			assertThat(response.getBody()).isNotNull();
+			assertThat(response.getBody().result()).isEqualTo(ApiResponseType.FAIL);
+			assertThat(response.getBody().errorMessage()).isEqualTo(ExceptionType.MEETING_ROOM_ALREADY_RESERVED.getMessage());
 		}
 
 	}
