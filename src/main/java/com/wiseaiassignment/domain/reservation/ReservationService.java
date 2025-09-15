@@ -52,20 +52,19 @@ public class ReservationService {
 
 	@Transactional
 	public ReservationDetail reserve(Reservation reservation, List<Long> attendeeUserIds) {
+		reservationRepository.save(reservation);
+
+		List<ReservationSlot> slots = ReservationSlot.createBulk(reservation);
 		try {
-			reservationRepository.save(reservation);
-
-			List<ReservationSlot> slots = ReservationSlot.createBulk(reservation);
 			reservationSlotRepository.saveAll(slots);
-
-			List<ReservationAttendee> attendees = ReservationAttendee.bulkCreate(reservation, attendeeUserIds);
-			reservationAttendeeRepository.saveAll(attendees);
-
-			return ReservationDetail.from(reservation, attendees);
 		} catch (Exception ex) {
-			log.error("회의실 예약 예외 발생 : {}", ex.getMessage());
-			throw new DomainException(ExceptionType.RESERVATION_FAILED);
+			throw new DomainException(ExceptionType.MEETING_ROOM_ALREADY_RESERVED);
 		}
+
+		List<ReservationAttendee> attendees = ReservationAttendee.bulkCreate(reservation, attendeeUserIds);
+		reservationAttendeeRepository.saveAll(attendees);
+
+		return ReservationDetail.from(reservation, attendees);
 	}
 
 	@Transactional

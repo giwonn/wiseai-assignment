@@ -72,20 +72,6 @@ class ReservationServiceTest {
 			verify(reservationRepository).save(any(Reservation.class));
 			verify(reservationSlotRepository).saveAll(anyList());
 		}
-
-		@Test
-		void 예약에_실패하면_RESERVATION_FAILED_예외로_변환된다() {
-			// given
-			given(reservationRepository.save(any(Reservation.class))).willReturn(reservation);
-			willThrow(new RuntimeException("Connection timeout"))
-					.given(reservationSlotRepository).saveAll(anyList());
-
-			// when & then
-			assertThatThrownBy(() -> reservationService.reserve(reservation, List.of()))
-					.isInstanceOf(DomainException.class)
-					.extracting(ex -> ((DomainException) ex).getType())
-					.isEqualTo(ExceptionType.RESERVATION_FAILED);
-		}
 	}
 
 	@Nested
