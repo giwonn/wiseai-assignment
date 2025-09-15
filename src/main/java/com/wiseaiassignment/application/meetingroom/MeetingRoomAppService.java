@@ -1,5 +1,6 @@
 package com.wiseaiassignment.application.meetingroom;
 
+import com.wiseaiassignment.application.meetingroom.dto.CreateMeetingRoomCommand;
 import com.wiseaiassignment.application.meetingroom.dto.MeetingRoomResult;
 import com.wiseaiassignment.domain.meetingroom.MeetingRoomService;
 import lombok.RequiredArgsConstructor;
@@ -17,5 +18,9 @@ public class MeetingRoomAppService {
 		return meetingRoomService.findAll().stream()
 				.map(MeetingRoomResult::from)
 				.toList();
+	}
+
+	public MeetingRoomResult createMeetingRoom(CreateMeetingRoomCommand command) {
+		return MeetingRoomResult.from(meetingRoomService.create(command.toEntity()));
 	}
 }

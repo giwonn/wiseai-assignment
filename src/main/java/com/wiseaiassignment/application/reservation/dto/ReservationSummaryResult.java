@@ -15,12 +15,12 @@ public record ReservationSummaryResult(
 ) {
 	public static ReservationSummaryResult from(ReservationSummary reservation) {
 		return new ReservationSummaryResult(
-				reservation.getId(),
-				reservation.getTitle(),
-				reservation.getMeetingRoomId(),
-				reservation.getStartTime(),
-				reservation.getEndTime(),
-				reservation.getStatus()
+				reservation.id(),
+				reservation.title(),
+				reservation.meetingRoomId(),
+				reservation.startTime(),
+				reservation.endTime(),
+				reservation.status()
 		);
 	}
 }

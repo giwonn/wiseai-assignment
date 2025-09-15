@@ -28,4 +28,8 @@ public class MeetingRoomService {
 		return meetingRoomRepository.findById(meetingRoomId)
 				.orElseThrow(() -> new DomainException(ExceptionType.NOT_FOUND_MEETING_ROOM));
 	}
+
+	public MeetingRoom create(MeetingRoom meetingRoom) {
+		return meetingRoomRepository.save(meetingRoom);
+	}
 }

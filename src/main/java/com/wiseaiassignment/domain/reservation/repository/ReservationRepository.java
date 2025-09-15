@@ -9,11 +9,20 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
 
-	@Query("SELECT r FROM Reservation r WHERE r.status = :status " +
+	@Query("SELECT DISTINCT r " +
+			"FROM Reservation r " +
+			"LEFT JOIN FETCH r.attendees " +
+			"WHERE r.id = :id")
+	Optional<Reservation> findByIdWithAttendees(@Param("id") Long id);
+
+	@Query("SELECT r " +
+			"FROM Reservation r " +
+			"WHERE r.status = :status " +
 			"AND r.timeRange.startTime < :endOfDay " +
 			"AND r.timeRange.endTime > :startOfDay")
 	List<Reservation> findByStatusAndDate(

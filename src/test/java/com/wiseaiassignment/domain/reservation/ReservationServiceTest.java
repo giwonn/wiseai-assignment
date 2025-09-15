@@ -2,9 +2,8 @@ package com.wiseaiassignment.domain.reservation;
 
 import com.wiseaiassignment.domain.common.exception.DomainException;
 import com.wiseaiassignment.domain.common.exception.ExceptionType;
-import com.wiseaiassignment.domain.reservation.model.Reservation;
-import com.wiseaiassignment.domain.reservation.model.ReservationFactory;
-import com.wiseaiassignment.domain.reservation.model.ReservationStatus;
+import com.wiseaiassignment.domain.reservation.model.*;
+import com.wiseaiassignment.domain.reservation.repository.ReservationAttendeeRepository;
 import com.wiseaiassignment.domain.reservation.repository.ReservationRepository;
 import com.wiseaiassignment.domain.reservation.repository.ReservationSlotRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +38,9 @@ class ReservationServiceTest {
 	@Mock
 	ReservationSlotRepository reservationSlotRepository;
 
+	@Mock
+	ReservationAttendeeRepository reservationAttendeeRepository;
+
 	Reservation reservation;
 
 	@BeforeEach
@@ -46,13 +48,8 @@ class ReservationServiceTest {
 		reservation = ReservationFactory.create(
 				1L,
 				"주간회의",
-				1L,
-				"회의실1",
-				1L,
-				"test1@email.com",
-				LocalDateTime.of(2024, 1, 1, 10, 0),
-				LocalDateTime.of(2024, 1, 1, 11, 0),
-				List.of("test1@email.com", "test2@email.com")
+				LocalDateTime.of(2025,1,1,10,0),
+				LocalDateTime.of(2025,1,1,11,0)
 		);
 	}
 
@@ -63,41 +60,28 @@ class ReservationServiceTest {
 		@Test
 		void 성공() {
 			// given
-			given(reservationRepository.findConflictReservations(any(), any(), any())).willReturn(List.of());
 			given(reservationRepository.save(any(Reservation.class))).willReturn(reservation);
 			given(reservationSlotRepository.saveAll(anyList())).willReturn(null);
+			given(reservationAttendeeRepository.saveAll(anyList())).willReturn(List.of());
 
 			// when
-			Reservation result = reservationService.reserve(reservation);
+			ReservationDetail result = reservationService.reserve(reservation, List.of());
 
 			// then
 			assertThat(result).isNotNull();
-			verify(reservationRepository).findConflictReservations(any(), any(), any());
 			verify(reservationRepository).save(any(Reservation.class));
 			verify(reservationSlotRepository).saveAll(anyList());
 		}
 
 		@Test
-		void 예약시간이_겹치면_MEETING_ROOM_ALREADY_RESERVED_예외_발생() {
-			// given
-			given(reservationRepository.findConflictReservations(any(), any(), any())).willReturn(List.of(reservation));
-
-			// when & then
-			assertThatThrownBy(() -> reservationService.reserve(reservation))
-					.isInstanceOf(DomainException.class)
-					.extracting(ex -> ((DomainException) ex).getType())
-					.isEqualTo(ExceptionType.MEETING_ROOM_ALREADY_RESERVED);
-		}
-
-		@Test
-		void 일반적인_예외는_RESERVATION_FAILED_예외로_변환된다() {
+		void 예약에_실패하면_RESERVATION_FAILED_예외로_변환된다() {
 			// given
 			given(reservationRepository.save(any(Reservation.class))).willReturn(reservation);
 			willThrow(new RuntimeException("Connection timeout"))
 					.given(reservationSlotRepository).saveAll(anyList());
 
 			// when & then
-			assertThatThrownBy(() -> reservationService.reserve(reservation))
+			assertThatThrownBy(() -> reservationService.reserve(reservation, List.of()))
 					.isInstanceOf(DomainException.class)
 					.extracting(ex -> ((DomainException) ex).getType())
 					.isEqualTo(ExceptionType.RESERVATION_FAILED);
@@ -114,23 +98,21 @@ class ReservationServiceTest {
 			long reservationId = 1L;
 			long userId = 1L;
 			Reservation spyReservation = spy(reservation);
-			given(reservationRepository.findById(anyLong())).willReturn(Optional.of(spyReservation));
+			given(reservationRepository.findByIdWithAttendees(anyLong())).willReturn(Optional.of(spyReservation));
 			given(reservationSlotRepository.deleteByReservationId(anyLong())).willReturn(1L);
 
 			// when
-			Reservation result = reservationService.cancel(reservationId, userId);
+			ReservationDetail result = reservationService.cancel(reservationId, userId);
 
 			// then
 			assertThat(result).isNotNull();
-			assertThat(result.getStatus()).isEqualTo(ReservationStatus.CANCELED);
-			verify(reservationRepository).findById(reservationId);
-			verify(reservationSlotRepository).deleteByReservationId(reservationId);
+			assertThat(result.status()).isEqualTo(ReservationStatus.CANCELED);
 		}
 
 		@Test
 		void 예약이_존재하지_않으면_NOT_FOUND_RESERVATION_예외_발생() {
 			// given
-			given(reservationRepository.findById(any())).willReturn(Optional.empty());
+			given(reservationRepository.findByIdWithAttendees(any())).willReturn(Optional.empty());
 
 			// when & then
 			assertThatThrownBy(() -> reservationService.cancel(1L, 1L))

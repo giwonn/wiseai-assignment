@@ -18,4 +18,13 @@ public class UserService {
 				.orElseThrow(() -> new DomainException(ExceptionType.NOT_FOUND_USER));
 	}
 
+	public User findById(long id) {
+		return userRepository.findById(id)
+				.orElseThrow(() -> new DomainException(ExceptionType.NOT_FOUND_USER));
+	}
+
+	public User create(User user) {
+		return userRepository.save(user);
+	}
+
 }

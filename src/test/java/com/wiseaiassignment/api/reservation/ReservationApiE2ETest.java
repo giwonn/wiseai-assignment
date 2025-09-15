@@ -7,7 +7,11 @@ import com.wiseaiassignment.api.reservation.dto.ReservationResponse;
 import com.wiseaiassignment.api.reservation.dto.ReservationSummaryResponse;
 import com.wiseaiassignment.domain.meetingroom.model.MeetingRoom;
 import com.wiseaiassignment.domain.meetingroom.repository.MeetingRoomRepository;
+import com.wiseaiassignment.domain.reservation.ReservationService;
 import com.wiseaiassignment.domain.reservation.model.Reservation;
+import com.wiseaiassignment.domain.reservation.model.ReservationAttendee;
+import com.wiseaiassignment.domain.reservation.model.ReservationDetail;
+import com.wiseaiassignment.domain.reservation.repository.ReservationAttendeeRepository;
 import com.wiseaiassignment.domain.reservation.repository.ReservationRepository;
 import com.wiseaiassignment.domain.user.model.User;
 import com.wiseaiassignment.domain.user.repository.UserRepository;
@@ -24,6 +28,7 @@ import org.springframework.http.ResponseEntity;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -49,35 +54,35 @@ class ReservationApiE2ETest {
 
 	User savedUser;
 	MeetingRoom savedMeetingRoom;
-	List<Reservation> savedReservations;
+	List<ReservationDetail> savedReservations;
+	@Autowired
+	private ReservationService reservationService;
 
 	@BeforeEach
 	void setUp() {
 		savedUser = userRepository.save(User.create("test@example.com", "테스트사용자"));
 		savedMeetingRoom = meetingRoomRepository.save(MeetingRoom.create("회의실1", 10));
-		savedReservations = reservationRepository.saveAll(
-				List.of(
+		savedReservations = List.of(
+			reservationService.reserve(
 					Reservation.create(
 							"회의1",
-							savedUser.getId(),
-							savedUser.getEmail(),
+							LocalDateTime.of(2025, 1, 1, 8, 0),
+							LocalDateTime.of(2025, 1, 1, 9, 0),
 							savedMeetingRoom.getId(),
-							savedMeetingRoom.getName(),
-							LocalDateTime.of(2025,1,1,8,0),
-							LocalDateTime.of(2025,1,1,9,0),
-							List.of("test1@email.com", "test2@email.com")
+							savedUser.getId()
 					),
+					List.of()
+			),
+			reservationService.reserve(
 					Reservation.create(
-							"회의2",
-							savedUser.getId(),
-							savedUser.getEmail(),
+							"회의1",
+							LocalDateTime.of(2025, 1, 1, 9, 0),
+							LocalDateTime.of(2025, 1, 1, 10, 0),
 							savedMeetingRoom.getId(),
-							savedMeetingRoom.getName(),
-							LocalDateTime.of(2025,1,1,9,0),
-							LocalDateTime.of(2025,1,1,10,0),
-							List.of("test3@email.com", "test4@email.com")
-					)
-				)
+							savedUser.getId()
+					),
+					List.of()
+			)
 		);
 	}
 
@@ -110,12 +115,12 @@ class ReservationApiE2ETest {
 					.sorted(Comparator.comparingLong(ReservationSummaryResponse::reservationId))
 					.toList();
 			assertThat(reservations).hasSize(2);
-			assertThat(reservations.get(0).reservationId()).isEqualTo(savedReservations.get(0).getId());
-			assertThat(reservations.get(0).reservationTitle()).isEqualTo(savedReservations.get(0).getTitle());
-			assertThat(reservations.get(0).roomId()).isEqualTo(savedMeetingRoom.getId());
-			assertThat(reservations.get(0).startTime()).isEqualTo(savedReservations.get(0).getStartTime());
-			assertThat(reservations.get(0).endTime()).isEqualTo(savedReservations.get(0).getEndTime());
-			assertThat(reservations.get(0).status()).isEqualTo(savedReservations.get(0).getStatus());
+			assertThat(reservations.get(0).reservationId()).isEqualTo(savedReservations.get(0).reservationId());
+			assertThat(reservations.get(0).reservationTitle()).isEqualTo(savedReservations.get(0).reservationTitle());
+			assertThat(reservations.get(0).roomId()).isEqualTo(savedReservations.get(0).meetingRoomId());
+			assertThat(reservations.get(0).startTime()).isEqualTo(savedReservations.get(0).startTime());
+			assertThat(reservations.get(0).endTime()).isEqualTo(savedReservations.get(0).endTime());
+			assertThat(reservations.get(0).status()).isEqualTo(savedReservations.get(0).status());
 		}
 	}
 
@@ -125,7 +130,7 @@ class ReservationApiE2ETest {
 		@Test
 		void 회의실_예약_단건을_조회한다() {
 			// given
-			String url = ENDPOINT + "/" + savedReservations.get(0).getId();
+			String url = ENDPOINT + "/" + savedReservations.get(0).reservationId();
 
 			// when
 			ParameterizedTypeReference<ApiCustomResponse<ReservationResponse>> responseType =
@@ -139,12 +144,14 @@ class ReservationApiE2ETest {
 			assertThat(response.getBody().result()).isEqualTo(ApiResponseType.SUCCESS);
 
 			ReservationResponse reservation = response.getBody().data();
-			assertThat(reservation.reservationId()).isEqualTo(savedReservations.get(0).getId());
-			assertThat(reservation.roomId()).isEqualTo(savedMeetingRoom.getId());
-			assertThat(reservation.roomName()).isEqualTo(savedMeetingRoom.getName());
-			assertThat(reservation.reserverEmail()).isEqualTo(savedUser.getEmail());
-			assertThat(reservation.startTime()).isEqualTo(savedReservations.get(0).getStartTime());
-			assertThat(reservation.endTime()).isEqualTo(savedReservations.get(0).getEndTime());
+			assertThat(reservation.reservationId()).isEqualTo(savedReservations.get(0).reservationId());
+			assertThat(reservation.reservationTitle()).isEqualTo(savedReservations.get(0).reservationTitle());
+			assertThat(reservation.roomId()).isEqualTo(savedReservations.get(0).meetingRoomId());
+			assertThat(reservation.startTime()).isEqualTo(savedReservations.get(0).startTime());
+			assertThat(reservation.endTime()).isEqualTo(savedReservations.get(0).endTime());
+			assertThat(reservation.status()).isEqualTo(savedReservations.get(0).status());
+			assertThat(reservation.organizerId()).isEqualTo(savedUser.getId());
+			assertThat(reservation.attendeeUserIds()).hasSize(1);
 		}
 	}
 
@@ -176,12 +183,16 @@ class ReservationApiE2ETest {
 			assertThat(response.getBody()).isNotNull();
 			assertThat(response.getBody().result()).isEqualTo(ApiResponseType.SUCCESS);
 
-			ReservationResponse reservation = response.getBody().data();
-			assertThat(reservation.roomId()).isEqualTo(savedMeetingRoom.getId());
-			assertThat(reservation.roomName()).isEqualTo(savedMeetingRoom.getName());
-			assertThat(reservation.reserverEmail()).isEqualTo(savedUser.getEmail());
-			assertThat(reservation.startTime()).isEqualTo(requestBody.startTime());
-			assertThat(reservation.endTime()).isEqualTo(requestBody.endTime());
+			ReservationDetail reservation = reservationService.findByIdWithAttendees(response.getBody().data().reservationId());
+
+			ReservationResponse responseBody = response.getBody().data();
+			assertThat(responseBody.reservationId()).isEqualTo(reservation.reservationId());
+			assertThat(responseBody.reservationTitle()).isEqualTo(reservation.reservationTitle());
+			assertThat(responseBody.status()).isEqualTo(reservation.status());
+			assertThat(responseBody.roomId()).isEqualTo(reservation.meetingRoomId());
+			assertThat(responseBody.startTime()).isEqualTo(reservation.startTime());
+			assertThat(responseBody.endTime()).isEqualTo(reservation.endTime());
+			assertThat(responseBody.organizerId()).isEqualTo(reservation.organizerId());
 		}
 
 		void 겹치는_시간에_예약을_시도하면_409에러코드를_반환한다() {
@@ -206,7 +217,7 @@ class ReservationApiE2ETest {
 					List.of()
 			);
 			HttpEntity request = new HttpEntity<>(requestBody);
-			String endpoint = ENDPOINT + "/" + savedReservations.get(0).getId() + "/cancel";
+			String endpoint = ENDPOINT + "/" + savedReservations.get(0).reservationId() + "/cancel";
 
 			// when
 			ParameterizedTypeReference<ApiCustomResponse<Void>> responseType =

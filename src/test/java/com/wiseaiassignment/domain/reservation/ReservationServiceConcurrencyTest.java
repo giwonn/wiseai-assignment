@@ -49,6 +49,7 @@ class ReservationServiceConcurrencyTest {
 	@BeforeEach
 	void setUp() {
 		savedMeetingRoom = meetingRoomRepository.save(MeetingRoom.create("회의실1", 10));
+
 	}
 
 	@AfterEach
@@ -69,28 +70,24 @@ class ReservationServiceConcurrencyTest {
 			AtomicInteger successCount = new AtomicInteger(0);
 			AtomicInteger failureCount = new AtomicInteger(0);
 
-			long[] userIds = new long[TRY_COUNT];
+			User[] userIds = new User[TRY_COUNT];
 			for (int i = 0; i < TRY_COUNT; i++) {
-				User user = userRepository.save(User.create("test"+i+"@example.com", "사용자"+i));
-				userIds[i] = user.getId();
+				userIds[i] = userRepository.save(User.create("test"+i+"@example.com", "사용자"+i));
 			}
 
 			// when
 			for (int i = 0; i < TRY_COUNT; i++) {
-				final int index = i;
+				final int idx = i;
 				executor.submit(() -> {
 					try {
 						Reservation reservation = Reservation.create(
 								"주간회의",
-								userIds[index],
-								"test@email.com",
+								LocalDateTime.of(2025,1,1,14,0),
+								LocalDateTime.of(2025,1,1,15,0),
 								savedMeetingRoom.getId(),
-								savedMeetingRoom.getName(),
-								LocalDateTime.of(2024, 1, 1, 10, 0),
-								LocalDateTime.of(2024, 1, 1, 10, 30),
-								List.of()
+								userIds[idx].getId()
 						);
-						reservationService.reserve(reservation);
+						reservationService.reserve(reservation, List.of());
 						successCount.incrementAndGet();
 					} catch (Exception e) {
 						failureCount.incrementAndGet();
@@ -113,7 +110,7 @@ class ReservationServiceConcurrencyTest {
 			assertThat(reservedList).hasSize(1);
 
 			List<ReservationSlot> slots = reservationSlotRepository.findAll();
-			assertThat(slots).hasSize(1);
+			assertThat(slots).hasSize(2);
 		}
 	}
 }

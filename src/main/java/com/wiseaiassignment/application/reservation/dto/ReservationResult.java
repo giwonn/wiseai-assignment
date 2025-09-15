@@ -1,7 +1,8 @@
 package com.wiseaiassignment.application.reservation.dto;
 
-import com.wiseaiassignment.domain.reservation.model.Reservation;
+import com.wiseaiassignment.domain.meetingroom.model.MeetingRoom;
 import com.wiseaiassignment.domain.reservation.model.ReservationStatus;
+import com.wiseaiassignment.domain.reservation.model.ReservationDetail;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -12,22 +13,22 @@ public record ReservationResult(
 		ReservationStatus status,
 		long roomId,
 		String roomName,
-		String reserverEmail,
 		LocalDateTime startTime,
 		LocalDateTime endTime,
-		List<String> attendeeEmails
+		long organizerId,
+		List<Long> attendeeUserIds
 ) {
-	public static ReservationResult from(Reservation reservation) {
+	public static ReservationResult from(ReservationDetail detail, MeetingRoom meetingRoom) {
 		return new ReservationResult(
-				reservation.getId(),
-				reservation.getTitle(),
-				reservation.getStatus(),
-				reservation.getMeetingRoomId(),
-				reservation.getMeetingRoomName(),
-				reservation.getUserEmail(),
-				reservation.getStartTime(),
-				reservation.getEndTime(),
-				reservation.getAttendeeEmails()
+				detail.reservationId(),
+				detail.reservationTitle(),
+				detail.status(),
+				detail.meetingRoomId(),
+				meetingRoom.getName(),
+				detail.startTime(),
+				detail.endTime(),
+				detail.organizerId(),
+				detail.attendeeUserIds()
 		);
 	}
 }

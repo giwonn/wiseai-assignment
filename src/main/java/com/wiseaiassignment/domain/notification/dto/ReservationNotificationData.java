@@ -1,34 +1,34 @@
 package com.wiseaiassignment.domain.notification.dto;
 
-import com.wiseaiassignment.domain.reservation.model.Reservation;
+import com.wiseaiassignment.domain.meetingroom.model.MeetingRoom;
+import com.wiseaiassignment.domain.reservation.model.ReservationDetail;
 import com.wiseaiassignment.domain.reservation.model.ReservationStatus;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * 회의 알림에 필요한 데이터를 담는 DTO
- */
 public record ReservationNotificationData(
 		long reservationId,
 		String meetingTitle,
+		long meetingRoomId,
 		String meetingRoomName,
-		String organizerEmail,
+		long organizerId,
 		LocalDateTime startTime,
 		LocalDateTime endTime,
-		List<String> attendeeEmails,
-		ReservationStatus status
+		ReservationStatus status,
+		List<Long> attendeeIds
 ) {
-	public static ReservationNotificationData from(Reservation reservation) {
+	public static ReservationNotificationData from(ReservationDetail reservation, MeetingRoom meetingRoom) {
 		return new ReservationNotificationData(
-				reservation.getId(),
-				reservation.getTitle(),
-				reservation.getMeetingRoomName(),
-				reservation.getUserEmail(),
-				reservation.getStartTime(),
-				reservation.getEndTime(),
-				reservation.getAttendeeEmails(),
-				reservation.getStatus()
+				reservation.reservationId(),
+				reservation.reservationTitle(),
+				reservation.meetingRoomId(),
+				meetingRoom.getName(),
+				reservation.organizerId(),
+				reservation.startTime(),
+				reservation.endTime(),
+				reservation.status(),
+				reservation.attendeeUserIds()
 		);
 	}
 }

@@ -12,10 +12,10 @@ public record ReservationResponse(
 		ReservationStatus status,
 		long roomId,
 		String roomName,
-		String reserverEmail,
 		LocalDateTime startTime,
 		LocalDateTime endTime,
-		List<String> attendeeEmails
+		long organizerId,
+		List<Long> attendeeUserIds
 ) {
 
 	public static ReservationResponse from(ReservationResult result) {
@@ -25,10 +25,10 @@ public record ReservationResponse(
 				result.status(),
 				result.roomId(),
 				result.roomName(),
-				result.reserverEmail(),
 				result.startTime(),
 				result.endTime(),
-				result.attendeeEmails()
+				result.organizerId(),
+				result.attendeeUserIds()
 		);
 	}
 }

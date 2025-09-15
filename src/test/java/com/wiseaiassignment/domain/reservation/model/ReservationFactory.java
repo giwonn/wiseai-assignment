@@ -1,30 +1,40 @@
 package com.wiseaiassignment.domain.reservation.model;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 public class ReservationFactory {
+
+
+	public static Reservation create(
+			Long id,
+			String title,
+			LocalDateTime startTime,
+			LocalDateTime endTime
+	) {
+		return new Reservation(
+				id,
+				title,
+				1L,
+				1L,
+				TimeRange.of(startTime, endTime)
+		);
+	}
+
 
 	public static Reservation create(
 			Long id,
 			String title,
 			long meetingRoomId,
-			String meetingRoomName,
-			long userId,
-			String userEmail,
+			long organizerId,
 			LocalDateTime startTime,
-			LocalDateTime endTime,
-			List<String> emails
+			LocalDateTime endTime
 	) {
 		return new Reservation(
 				id,
 				title,
 				meetingRoomId,
-				meetingRoomName,
-				userId,
-				userEmail,
-				TimeRange.of(startTime, endTime),
-				emails
+				organizerId,
+				TimeRange.of(startTime, endTime)
 		);
 	}
 }

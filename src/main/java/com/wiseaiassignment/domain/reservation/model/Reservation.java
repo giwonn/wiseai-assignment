@@ -2,20 +2,25 @@ package com.wiseaiassignment.domain.reservation.model;
 
 import com.wiseaiassignment.domain.common.exception.DomainException;
 import com.wiseaiassignment.domain.common.exception.ExceptionType;
+import com.wiseaiassignment.domain.meetingroom.model.MeetingRoom;
+import com.wiseaiassignment.domain.user.model.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EntityListeners(AuditingEntityListener.class)
 public class Reservation {
 
 	@Id
@@ -25,76 +30,77 @@ public class Reservation {
 	@Column(nullable = false)
 	private String title;
 
-	@Column(nullable = false)
-	@JoinColumn(foreignKey = @ForeignKey(name = "fk_reservation_meeting_room"))
-	private long meetingRoomId;
-
-	@Column(nullable = false)
-	private String meetingRoomName;
-
-	@Column(nullable = false)
-	@JoinColumn(foreignKey = @ForeignKey(name = "fk_reservation_user"))
-	private long userId;
-
-	@Column(nullable = false)
-	private String userEmail;
-
 	@Getter(AccessLevel.NONE)
 	@Embedded
 	private TimeRange timeRange;
-
-	@Column(nullable = false)
-	private List<String> attendeeEmails = List.of();
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private ReservationStatus status = ReservationStatus.RESERVED;
 
-	@CreatedDate
+	@Column(name = "meeting_room_id", nullable = false)
+	private long meetingRoomId;
+
+
+	@Column(name = "organizer_id", nullable = false)
+	private long organizerId;
+
+	@CreationTimestamp
 	private Instant createdAt;
 
-	@LastModifiedDate
+	@UpdateTimestamp
 	private Instant updatedAt;
+
+	@OneToMany(mappedBy = "reservation")
+	private List<ReservationAttendee> attendees = new ArrayList<>();
+
+	@Getter(AccessLevel.NONE)
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(
+			name = "meeting_room_id",
+			nullable = false,
+			foreignKey = @ForeignKey(name = "fk_reservation_meeting_room"),
+			insertable=false, updatable=false
+	)
+	private MeetingRoom meetingRoom;
+
+	@Getter(AccessLevel.NONE)
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(
+			name = "organizer_id",
+			nullable = false,
+			foreignKey = @ForeignKey(name = "fk_reservation_user"),
+			insertable=false, updatable=false
+	)
+	private User organizer;
 
 	Reservation(
 			Long id,
 			String title,
 			long meetingRoomId,
-			String meetingRoomName,
-			long userId,
-			String userEmail,
-			TimeRange timeRange,
-			List<String> attendeeEmails
+			long organizerId,
+			TimeRange timeRange
 	) {
 		this.id = id;
 		this.title = title;
 		this.meetingRoomId = meetingRoomId;
-		this.meetingRoomName = meetingRoomName;
-		this.userId = userId;
-		this.userEmail = userEmail;
+		this.organizerId = organizerId;
 		this.timeRange = timeRange;
-		this.attendeeEmails = attendeeEmails;
 	}
 
 	public static Reservation create(
 			String title,
-			long userId,
-			String userEmail,
-			long meetingRoomId,
-			String meetingRoomName,
 			LocalDateTime startTime,
 			LocalDateTime endTime,
-			List<String> attendeeEmails
+			long meetingRoomId,
+			long organizerId
 	) {
 		return new Reservation(
 				null,
 				title,
 				meetingRoomId,
-				meetingRoomName,
-				userId,
-				userEmail,
-				TimeRange.of(startTime, endTime),
-				attendeeEmails
+				organizerId,
+				TimeRange.of(startTime, endTime)
 		);
 	}
 
@@ -106,8 +112,14 @@ public class Reservation {
 		return timeRange.getEndTime();
 	}
 
+	public List<Long> getAttendeeUserIds() {
+		return attendees.stream()
+				.map(ReservationAttendee::getUserId)
+				.toList();
+	}
+
 	public void cancel(long userId) {
-		if (this.userId != userId) {
+		if (organizerId != userId) {
 			throw new DomainException(ExceptionType.NOT_RESERVATION_HOST);
 		}
 		if (status == ReservationStatus.CANCELED) {

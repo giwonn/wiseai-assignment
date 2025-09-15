@@ -1,5 +1,6 @@
 package com.wiseaiassignment.domain.reservation.model;
 
+import com.wiseaiassignment.domain.meetingroom.model.MeetingRoom;
 import jakarta.persistence.*;
 import lombok.Getter;
 
@@ -25,12 +26,10 @@ public class ReservationSlot {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(nullable = false)
-	@JoinColumn(foreignKey = @ForeignKey(name = "fk_reservation_slot_meeting_room"))
+	@Column(name = "meeting_room_id", nullable = false)
 	private long meetingRoomId;
 
-	@Column(nullable = false)
-	@JoinColumn(foreignKey = @ForeignKey(name = "fk_reservation_slot_reservation"))
+	@Column(name = "reservation_id", nullable = false)
 	private long reservationId;
 
 	@Column(nullable = false, columnDefinition = "DATETIME(0)")
@@ -39,10 +38,10 @@ public class ReservationSlot {
 	@Column(nullable = false)
 	private int durationMinutes = SLOT_INTERVAL_MINUTES;
 
-	public static ReservationSlot create(long meetingRoomId, long reservationId, LocalDateTime slotTime) {
+	public static ReservationSlot create(Reservation reservation, LocalDateTime slotTime) {
 		ReservationSlot entity = new ReservationSlot();
-		entity.meetingRoomId = meetingRoomId;
-		entity.reservationId = reservationId;
+		entity.meetingRoomId = reservation.getMeetingRoomId();
+		entity.reservationId = reservation.getId();
 		entity.slotTime = slotTime;
 		return entity;
 	}
@@ -52,7 +51,7 @@ public class ReservationSlot {
 
 		LocalDateTime slotTime = reservation.getStartTime();
 		while (slotTime.isBefore(reservation.getEndTime())) {
-			slots.add(create(reservation.getMeetingRoomId(), reservation.getId(), slotTime));
+			slots.add(create(reservation, slotTime));
 			slotTime = slotTime.plusMinutes(SLOT_INTERVAL_MINUTES);
 		}
 
