@@ -118,14 +118,29 @@ public class Reservation {
 				.toList();
 	}
 
-	public void cancel(long userId) {
+	public void checkValidOrganizer(long userId) {
 		if (organizerId != userId) {
 			throw new DomainException(ExceptionType.NOT_RESERVATION_HOST);
 		}
+	}
+
+	public void cancel() {
 		if (status == ReservationStatus.CANCELED) {
 			throw new DomainException(ExceptionType.ALREADY_CANCELED_RESERVATION);
 		}
 		status = ReservationStatus.CANCELED;
+	}
+
+	public void changeReservation(
+			long newMeetingRoomId,
+			LocalDateTime newStartTime,
+			LocalDateTime newEndTime
+	) {
+		if (status == ReservationStatus.CANCELED) {
+			throw new DomainException(ExceptionType.ALREADY_CANCELED_RESERVATION);
+		}
+		this.meetingRoomId = newMeetingRoomId;
+		this.timeRange = TimeRange.of(newStartTime, newEndTime);
 	}
 
 }

@@ -22,7 +22,6 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
@@ -83,8 +82,7 @@ class ReservationServiceTest {
 			// given
 			long reservationId = 1L;
 			long userId = 1L;
-			Reservation spyReservation = spy(reservation);
-			given(reservationRepository.findByIdWithAttendees(anyLong())).willReturn(Optional.of(spyReservation));
+			given(reservationRepository.findByIdWithAttendees(anyLong())).willReturn(Optional.of(reservation));
 			given(reservationSlotRepository.deleteByReservationId(anyLong())).willReturn(1L);
 
 			// when
@@ -96,15 +94,107 @@ class ReservationServiceTest {
 		}
 
 		@Test
-		void 예약이_존재하지_않으면_NOT_FOUND_RESERVATION_예외_발생() {
+		void 주최자가_아닌_유저가_예약을_취소하면_NOT_RESERVATION_HOST_예외가_발생한다() {
 			// given
-			given(reservationRepository.findByIdWithAttendees(any())).willReturn(Optional.empty());
+			given(reservationRepository.findByIdWithAttendees(any())).willReturn(Optional.of(reservation));
 
 			// when & then
-			assertThatThrownBy(() -> reservationService.cancel(1L, 1L))
+			assertThatThrownBy(() -> reservationService.cancel(reservation.getId(), reservation.getOrganizerId()+1L))
+					.isInstanceOf(DomainException.class)
+					.extracting(ex -> ((DomainException) ex).getType())
+					.isEqualTo(ExceptionType.NOT_RESERVATION_HOST);
+		}
+	}
+
+	@Nested
+	@DisplayName("회의실 예약 시간 변경")
+	class ChangeReservationTest {
+
+		@Test
+		void 변경하려는_예약이_존재하지_않으면_NOT_FOUND_RESERVATION_예외가_발생한다() {
+			// given
+			given(reservationRepository.findByIdWithAttendees(anyLong())).willReturn(Optional.empty());
+
+			// when & then
+			assertThatThrownBy(() ->
+					reservationService.changeTime(
+						1L,
+						1L,
+						1L,
+						LocalDateTime.of(2025,1,1,12,0),
+						LocalDateTime.of(2025,1,1,13,0)
+					)
+			)
 					.isInstanceOf(DomainException.class)
 					.extracting(ex -> ((DomainException) ex).getType())
 					.isEqualTo(ExceptionType.NOT_FOUND_RESERVATION);
+		}
+
+		@Test
+		void 주최자가_아닌_유저가_예약시간을_변경하면_NOT_RESERVATION_HOST_예외가_발생한다() {
+			// given
+			given(reservationRepository.findByIdWithAttendees(anyLong())).willReturn(Optional.of(reservation));
+
+			// when & then
+			assertThatThrownBy(() -> reservationService.changeTime(
+						reservation.getId(),
+						reservation.getOrganizerId()+1L, 1L,
+						LocalDateTime.of(2025,1,1,12,0),
+						LocalDateTime.of(2025,1,1,13,0)
+					)
+			)
+					.isInstanceOf(DomainException.class)
+					.extracting(ex -> ((DomainException) ex).getType())
+					.isEqualTo(ExceptionType.NOT_RESERVATION_HOST);
+		}
+
+		@Test
+		void 회의실이_이미_예약되어있으면_MEETING_ROOM_ALREADY_RESERVED_예외가_발생한다() {
+			// given
+			given(reservationRepository.findByIdWithAttendees(anyLong())).willReturn(Optional.of(reservation));
+			given(reservationRepository.findConflictReservations(anyLong(), any(), any()))
+					.willReturn(
+							List.of(
+									ReservationFactory.create(
+											2L,
+											"다른회의",
+											LocalDateTime.of(2025,1,1,12,0),
+											LocalDateTime.of(2025,1,1,13,0)
+									)
+							)
+					);
+
+			// when & then
+			assertThatThrownBy(() ->
+					reservationService.changeTime(
+							reservation.getId(),
+							reservation.getOrganizerId(), 1L,
+							LocalDateTime.of(2025,1,1,12,0),
+							LocalDateTime.of(2025,1,1,13,0)
+					)
+			)
+					.isInstanceOf(DomainException.class)
+					.extracting(ex -> ((DomainException) ex).getType())
+					.isEqualTo(ExceptionType.MEETING_ROOM_ALREADY_RESERVED);
+		}
+
+		@Test
+		void 성공() {
+			// given
+			given(reservationRepository.findByIdWithAttendees(anyLong())).willReturn(Optional.of(reservation));
+			given(reservationSlotRepository.deleteByReservationId(anyLong())).willReturn(1L);
+			given(reservationRepository.findConflictReservations(anyLong(), any(), any())).willReturn(List.of());
+			given(reservationSlotRepository.saveAll(anyList())).willReturn(null);
+
+			// when
+			ReservationDetail result = reservationService.changeTime(reservation.getId(), reservation.getOrganizerId(), 1L,
+					LocalDateTime.of(2025,1,1,12,0),
+					LocalDateTime.of(2025,1,1,13,0));
+
+			// then
+			assertThat(result).isNotNull();
+			assertThat(result.startTime()).isEqualTo(LocalDateTime.of(2025,1,1,12,0));
+			assertThat(result.endTime()).isEqualTo(LocalDateTime.of(2025,1,1,13,0));
 		}
 
 	}

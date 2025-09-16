@@ -1,6 +1,5 @@
 package com.wiseaiassignment.domain.reservation.model;
 
-import com.wiseaiassignment.domain.meetingroom.model.MeetingRoom;
 import jakarta.persistence.*;
 import lombok.Getter;
 

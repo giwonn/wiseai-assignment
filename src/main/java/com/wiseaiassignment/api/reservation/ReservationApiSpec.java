@@ -1,10 +1,7 @@
 package com.wiseaiassignment.api.reservation;
 
 import com.wiseaiassignment.api.ApiCustomResponse;
-import com.wiseaiassignment.api.reservation.dto.CancelReservationRequest;
-import com.wiseaiassignment.api.reservation.dto.CreateReservationRequest;
-import com.wiseaiassignment.api.reservation.dto.ReservationResponse;
-import com.wiseaiassignment.api.reservation.dto.ReservationSummaryResponse;
+import com.wiseaiassignment.api.reservation.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -40,6 +37,13 @@ public interface ReservationApiSpec {
 	ApiCustomResponse<Void> cancel(
 			long id,
 			CancelReservationRequest request
+	);
+
+	@Operation(summary = "회의실 예약 변경", description = "회의실을 예약을 변경합니다.")
+	@ApiResponse(responseCode = "200", description = "회의실 예약 변경 성공")
+	ApiCustomResponse<ReservationResponse> modify(
+			long id,
+			ChangeReservationRequest request
 	);
 
 }

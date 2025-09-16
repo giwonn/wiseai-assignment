@@ -1,11 +1,9 @@
 package com.wiseaiassignment.api.reservation;
 
-import com.wiseaiassignment.api.reservation.dto.CancelReservationRequest;
-import com.wiseaiassignment.api.reservation.dto.CreateReservationRequest;
-import com.wiseaiassignment.api.reservation.dto.ReservationResponse;
+import com.wiseaiassignment.api.reservation.dto.*;
 import com.wiseaiassignment.api.ApiCustomResponse;
-import com.wiseaiassignment.api.reservation.dto.ReservationSummaryResponse;
 import com.wiseaiassignment.application.reservation.ReservationAppService;
+import com.wiseaiassignment.application.reservation.dto.ChangeReservationCommand;
 import com.wiseaiassignment.application.reservation.dto.ReservationResult;
 import com.wiseaiassignment.application.reservation.dto.ReservationSummaryResult;
 import jakarta.validation.Valid;
@@ -59,5 +57,15 @@ public class ReservationController implements ReservationApiSpec {
 	) {
 		reservationAppService.cancel(request.toCancelCommand(id));
 		return ApiCustomResponse.empty();
+	}
+
+	@Override
+	@PatchMapping(path = "/{id}")
+	public ApiCustomResponse<ReservationResponse> modify(
+			@PathVariable long id,
+			@Valid @RequestBody ChangeReservationRequest request
+	) {
+		ReservationResult result = reservationAppService.changeReservation(request.toChangeCommand(id));
+		return ApiCustomResponse.of(ReservationResponse.from(result));
 	}
 }

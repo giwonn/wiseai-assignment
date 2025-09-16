@@ -1,9 +1,6 @@
 package com.wiseaiassignment.application.reservation;
 
-import com.wiseaiassignment.application.reservation.dto.CancelReservationCommand;
-import com.wiseaiassignment.application.reservation.dto.CreateReservationCommand;
-import com.wiseaiassignment.application.reservation.dto.ReservationResult;
-import com.wiseaiassignment.application.reservation.dto.ReservationSummaryResult;
+import com.wiseaiassignment.application.reservation.dto.*;
 import com.wiseaiassignment.domain.meetingroom.MeetingRoomService;
 import com.wiseaiassignment.domain.meetingroom.model.MeetingRoom;
 import com.wiseaiassignment.domain.notification.NotificationService;
@@ -64,6 +61,21 @@ public class ReservationAppService {
 
 		// 2. 취소 이메일 전송 (비동기)
 		notificationService.sendEmail(ReservationNotificationData.from(reservation, meetingRoom));
+	}
+
+	public ReservationResult changeReservation(ChangeReservationCommand command) {
+		ReservationDetail reservation = reservationService.changeTime(
+				command.reservationId(),
+				command.userId(),
+				command.roomId(),
+				command.startTime(),
+				command.endTime()
+		);
+
+		MeetingRoom meetingRoom = meetingRoomService.findById(command.reservationId());
+		notificationService.sendEmail(ReservationNotificationData.from(reservation, meetingRoom));
+
+		return ReservationResult.from(reservation, meetingRoom);
 	}
 
 }

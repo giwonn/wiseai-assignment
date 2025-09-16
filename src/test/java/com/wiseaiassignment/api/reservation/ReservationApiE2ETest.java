@@ -3,6 +3,7 @@ package com.wiseaiassignment.api.reservation;
 import com.wiseaiassignment.api.ApiCustomResponse;
 import com.wiseaiassignment.api.ApiErrorResponse;
 import com.wiseaiassignment.api.ApiResponseType;
+import com.wiseaiassignment.api.reservation.dto.ChangeReservationRequest;
 import com.wiseaiassignment.api.reservation.dto.CreateReservationRequest;
 import com.wiseaiassignment.api.reservation.dto.ReservationResponse;
 import com.wiseaiassignment.api.reservation.dto.ReservationSummaryResponse;
