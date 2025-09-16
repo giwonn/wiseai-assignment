@@ -11,10 +11,7 @@ import com.wiseaiassignment.domain.meetingroom.model.MeetingRoom;
 import com.wiseaiassignment.domain.meetingroom.repository.MeetingRoomRepository;
 import com.wiseaiassignment.domain.reservation.ReservationService;
 import com.wiseaiassignment.domain.reservation.model.Reservation;
-import com.wiseaiassignment.domain.reservation.model.ReservationAttendee;
 import com.wiseaiassignment.domain.reservation.model.ReservationDetail;
-import com.wiseaiassignment.domain.reservation.repository.ReservationAttendeeRepository;
-import com.wiseaiassignment.domain.reservation.repository.ReservationRepository;
 import com.wiseaiassignment.domain.user.model.User;
 import com.wiseaiassignment.domain.user.repository.UserRepository;
 import com.wiseaiassignment.helper.util.DatabaseCleanUp;
@@ -30,7 +27,6 @@ import org.springframework.http.ResponseEntity;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -47,9 +43,6 @@ class ReservationApiE2ETest {
 
 	@Autowired
 	UserRepository userRepository;
-
-	@Autowired
-	ReservationRepository reservationRepository;
 
 	@Autowired
 	DatabaseCleanUp databaseCleanUp;
