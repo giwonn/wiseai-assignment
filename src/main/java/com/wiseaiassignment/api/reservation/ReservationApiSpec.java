@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -29,21 +30,21 @@ public interface ReservationApiSpec {
 	@Operation(summary = "회의실 예약", description = "회의실을 예약을 요청합니다.")
 	@ApiResponse(responseCode = "200", description = "회의실 예약 성공")
 	ApiCustomResponse<ReservationResponse> reserve(
-			CreateReservationRequest request
+			@Valid CreateReservationRequest request
 	);
 
 	@Operation(summary = "회의실 예약 취소", description = "회의실을 예약을 취소합니다.")
 	@ApiResponse(responseCode = "200", description = "회의실 예약 취소 성공")
 	ApiCustomResponse<Void> cancel(
 			long id,
-			CancelReservationRequest request
+			@Valid CancelReservationRequest request
 	);
 
 	@Operation(summary = "회의실 예약 변경", description = "회의실을 예약을 변경합니다.")
 	@ApiResponse(responseCode = "200", description = "회의실 예약 변경 성공")
 	ApiCustomResponse<ReservationResponse> modify(
 			long id,
-			ChangeReservationRequest request
+			@Valid ChangeReservationRequest request
 	);
 
 }

@@ -3,17 +3,18 @@ package com.wiseaiassignment.api.reservation;
 import com.wiseaiassignment.api.reservation.dto.*;
 import com.wiseaiassignment.api.ApiCustomResponse;
 import com.wiseaiassignment.application.reservation.ReservationAppService;
-import com.wiseaiassignment.application.reservation.dto.ChangeReservationCommand;
 import com.wiseaiassignment.application.reservation.dto.ReservationResult;
 import com.wiseaiassignment.application.reservation.dto.ReservationSummaryResult;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
 
+@Validated
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/reservations")
@@ -22,9 +23,9 @@ public class ReservationController implements ReservationApiSpec {
 	private final ReservationAppService reservationAppService;
 
 	@Override
-	@GetMapping(path = "/summary")
+	@GetMapping(path = "/daily/{date}")
 	public ApiCustomResponse<List<ReservationSummaryResponse>> getReservationsByDate(
-			@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+			@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
 			LocalDate date
 	) {
 		List<ReservationSummaryResult> results = reservationAppService.findByDate(date);

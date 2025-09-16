@@ -94,7 +94,7 @@ class ReservationApiE2ETest {
 		@Test
 		void 회의실_예약_리스트를_조회한다() {
 			// given
-			String url = ENDPOINT + "/summary?date=2025-01-01";
+			String url = ENDPOINT + "/daily/2025-01-01";
 
 			// when
 			ParameterizedTypeReference<ApiCustomResponse<List<ReservationSummaryResponse>>> responseType =

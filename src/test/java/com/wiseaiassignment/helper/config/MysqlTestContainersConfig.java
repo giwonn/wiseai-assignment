@@ -11,7 +11,7 @@ public class MysqlTestContainersConfig {
 
 	static {
 		mySqlContainer = new MySQLContainer<>(DockerImageName.parse("mysql:8.0"))
-				.withDatabaseName("reservation_db")
+				.withDatabaseName("wise_ai")
 				.withUsername("application")
 				.withPassword("application")
 				.withCommand(
